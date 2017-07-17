@@ -1,0 +1,695 @@
+// Time unit: minute
+// Distance unit: meter
+
+const step = 60.0;
+const minInHr = 60;
+const minInDay = 24*minInHr;
+const fastRate = 100.0;
+
+const PEDESTRIANS = 100;
+const TRAFFIC_BOOSTER = 1.0;
+const MOVE_RATE_BOOSTER = 1.0;
+const GAUSS_BOOSTER = 200.0;
+const SPAWN_RATE_BOOSTER = 400.0;
+const CHOOSE_START_GOAL_GAUSS_BOOSTER = 10.0;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Space definition
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+space Indexed2DGrid (){
+	universe <int id, int x, int y> 
+    nodes { 
+        [0,488058,6200009];
+        [1,488043,6199705];
+        [2,487474,6199649];
+        [3,487840,6199463];
+        [4,488028,6199411];
+        [5,488308,6199389];
+        [6,488579,6199475];
+        [7,487707,6199685];
+        [8,488249,6199663];
+        [9,488263,6199584];
+        [10,488091,6199677];
+        [11,488456,6199586];
+        [12,488533,6199548];
+        [13,488507,6199449];
+        [14,488409,6199411];
+        [15,488426,6199488];
+        [16,488394,6199508];
+        [17,487849,6199504];
+        [18,487797,6199473];
+        [19,487883,6199459];
+        [20,488045,6199212];
+    }
+    connections {
+        [0,488058,6200009] -> [1,488043,6199705];
+        [1,488043,6199705] -> [0,488058,6200009];
+        [1,488043,6199705] -> [7,487707,6199685];
+        [1,488043,6199705] -> [8,488249,6199663];
+        [1,488043,6199705] -> [10,488091,6199677];
+        [1,488043,6199705] -> [17,487849,6199504];
+        [2,487474,6199649] -> [7,487707,6199685];
+        [2,487474,6199649] -> [18,487797,6199473];
+        [3,487840,6199463] -> [17,487849,6199504];
+        [3,487840,6199463] -> [18,487797,6199473];
+        [3,487840,6199463] -> [19,487883,6199459];
+        [4,488028,6199411] -> [5,488308,6199389];
+        [4,488028,6199411] -> [19,487883,6199459];
+        [4,488028,6199411] -> [20,488045,6199212];
+        [5,488308,6199389] -> [4,488028,6199411];
+        [5,488308,6199389] -> [9,488263,6199584];
+        [5,488308,6199389] -> [10,488091,6199677];
+        [5,488308,6199389] -> [14,488409,6199411];
+        [5,488308,6199389] -> [16,488394,6199508];
+        [6,488579,6199475] -> [12,488533,6199548];
+        [6,488579,6199475] -> [13,488507,6199449];
+        [7,487707,6199685] -> [1,488043,6199705];
+        [7,487707,6199685] -> [2,487474,6199649];
+        [7,487707,6199685] -> [17,487849,6199504];
+        [8,488249,6199663] -> [1,488043,6199705];
+        [8,488249,6199663] -> [9,488263,6199584];
+        [8,488249,6199663] -> [11,488456,6199586];
+        [9,488263,6199584] -> [5,488308,6199389];
+        [9,488263,6199584] -> [8,488249,6199663];
+        [9,488263,6199584] -> [10,488091,6199677];
+        [9,488263,6199584] -> [16,488394,6199508];
+        [10,488091,6199677] -> [1,488043,6199705];
+        [10,488091,6199677] -> [5,488308,6199389];
+        [10,488091,6199677] -> [9,488263,6199584];
+        [11,488456,6199586] -> [8,488249,6199663];
+        [11,488456,6199586] -> [12,488533,6199548];
+        [11,488456,6199586] -> [15,488426,6199488];
+        [11,488456,6199586] -> [16,488394,6199508];
+        [12,488533,6199548] -> [6,488579,6199475];
+        [12,488533,6199548] -> [11,488456,6199586];
+        [12,488533,6199548] -> [13,488507,6199449];
+        [13,488507,6199449] -> [6,488579,6199475];
+        [13,488507,6199449] -> [12,488533,6199548];
+        [13,488507,6199449] -> [14,488409,6199411];
+        [13,488507,6199449] -> [15,488426,6199488];
+        [14,488409,6199411] -> [5,488308,6199389];
+        [14,488409,6199411] -> [13,488507,6199449];
+        [14,488409,6199411] -> [15,488426,6199488];
+        [15,488426,6199488] -> [11,488456,6199586];
+        [15,488426,6199488] -> [13,488507,6199449];
+        [15,488426,6199488] -> [14,488409,6199411];
+        [15,488426,6199488] -> [16,488394,6199508];
+        [16,488394,6199508] -> [5,488308,6199389];
+        [16,488394,6199508] -> [9,488263,6199584];
+        [16,488394,6199508] -> [11,488456,6199586];
+        [16,488394,6199508] -> [15,488426,6199488];
+        [17,487849,6199504] -> [1,488043,6199705];
+        [17,487849,6199504] -> [3,487840,6199463];
+        [17,487849,6199504] -> [7,487707,6199685];
+        [17,487849,6199504] -> [18,487797,6199473];
+        [17,487849,6199504] -> [19,487883,6199459];
+        [18,487797,6199473] -> [2,487474,6199649];
+        [18,487797,6199473] -> [3,487840,6199463];
+        [18,487797,6199473] -> [17,487849,6199504];
+        [19,487883,6199459] -> [3,487840,6199463];
+        [19,487883,6199459] -> [4,488028,6199411];
+        [19,487883,6199459] -> [17,487849,6199504];
+        [20,488045,6199212] -> [4,488028,6199411];     
+    }
+    areas {
+    	
+    }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Pre-computed distances table
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const DISTANCES = [:
+[: 0.0, 304.369840819, 876.729265822, 625.69705819, 792.859567419, 720.540504185, 907.615809676, 640.964552601, 514.607801235, 555.472222753, 359.939616776, 735.465221305, 821.331396252, 834.557753268, 823.5121049, 744.657808885, 706.921884357, 583.720874466, 644.260117937, 640.121229075, 992.584378096 :] ,
+[: 304.369840819, 0.0, 572.359425003, 321.327217371, 488.4897266, 416.170663367, 603.245968858, 336.594711783, 210.237960416, 251.102381934, 55.5697759578, 431.095380486, 516.961555433, 530.187912449, 519.142264082, 440.287968067, 402.552043539, 279.351033648, 339.890277118, 335.751388256, 688.214537277 :] ,
+[: 876.729265822, 572.359425003, 0.0, 411.985759792, 607.909743899, 888.772699805, 1173.80107705, 235.764713221, 782.597385419, 823.461806938, 627.929200961, 1003.45480549, 1089.32098044, 1097.25044022, 992.140973467, 1012.64739307, 974.911468542, 428.377523153, 367.838279683, 455.171405555, 807.634554576 :] ,
+[: 625.69705819, 321.327217371, 411.985759792, 0.0, 195.923984107, 476.786940013, 761.815317259, 272.03052513, 531.565177788, 572.429599306, 376.896993329, 723.249312387, 787.621898048, 685.264680423, 580.155213675, 659.00950969, 623.60996273, 41.9761837236, 44.1474801093, 43.1856457634, 395.648794784 :] ,
+[: 792.859567419, 488.4897266, 607.909743899, 195.923984107, 0.0, 280.862955906, 565.891333152, 439.193034359, 561.218833602, 480.987916867, 544.059502558, 527.32532828, 591.697913941, 489.340696316, 384.231229568, 463.085525583, 427.685978623, 209.138692953, 240.071464216, 152.738338344, 199.724810677 :] ,
+[: 720.540504185, 416.170663367, 888.772699805, 476.786940013, 280.862955906, 0.0, 285.028377246, 720.055990265, 280.355877696, 200.124960962, 360.600887409, 246.462372374, 310.834958036, 208.47774041, 103.368273663, 182.222569678, 146.823022718, 490.001648858, 520.934420122, 433.601294249, 480.587766583 :] ,
+[: 907.615809676, 603.245968858, 1173.80107705, 761.815317259, 565.891333152, 285.028377246, 0.0, 939.84068064, 393.008008441, 355.636167351, 551.168773328, 172.150588371, 86.2844134244, 76.550636836, 181.660103584, 166.450581219, 204.186505747, 775.030026105, 805.962797368, 718.629671496, 765.616143829 :] ,
+[: 640.964552601, 336.594711783, 235.764713221, 272.03052513, 439.193034359, 720.055990265, 939.84068064, 0.0, 546.832672199, 587.697093717, 392.16448774, 767.690092269, 853.556267216, 866.782624232, 823.424263927, 776.882679849, 739.146755321, 230.054341407, 290.593584877, 286.454696015, 638.917845036 :] ,
+[: 514.607801235, 210.237960416, 782.597385419, 531.565177788, 561.218833602, 280.355877696, 393.008008441, 546.832672199, 0.0, 80.2309167341, 265.807736374, 220.85742007, 306.723595017, 359.316447249, 348.270798881, 269.416502866, 231.680578338, 489.588994064, 550.128237535, 545.989348673, 760.943644279 :] ,
+[: 555.472222753, 251.102381934, 823.461806938, 572.429599306, 480.987916867, 200.124960962, 355.636167351, 587.697093717, 80.2309167341, 0.0, 195.532605977, 251.089011261, 336.955186208, 279.085530515, 268.039882147, 189.185586132, 151.449661604, 530.453415582, 590.992659053, 586.853770191, 680.712727545 :] ,
+[: 359.939616776, 55.5697759578, 627.929200961, 376.896993329, 544.059502558, 360.600887409, 551.168773328, 392.16448774, 265.807736374, 195.532605977, 0.0, 446.621617237, 532.487792184, 474.618136492, 463.572488124, 384.718192109, 346.982267581, 334.920809605, 395.460053076, 391.321164214, 743.784313235 :] ,
+[: 735.465221305, 431.095380486, 1003.45480549, 723.249312387, 527.32532828, 246.462372374, 172.150588371, 767.690092269, 220.85742007, 251.089011261, 446.621617237, 0.0, 85.8661749468, 188.223392572, 181.343319817, 102.489023803, 99.6393496566, 710.446414134, 767.396792496, 680.063666624, 727.050138957 :] ,
+[: 821.331396252, 516.961555433, 1089.32098044, 787.621898048, 591.697913941, 310.834958036, 86.2844134244, 853.556267216, 306.723595017, 336.955186208, 532.487792184, 85.8661749468, 0.0, 102.357217625, 207.466684373, 188.355198749, 185.505524603, 796.312589081, 831.769378158, 744.436252285, 791.422724618 :] ,
+[: 834.557753268, 530.187912449, 1097.25044022, 685.264680423, 489.340696316, 208.47774041, 76.550636836, 866.782624232, 359.316447249, 279.085530515, 474.618136492, 188.223392572, 102.357217625, 0.0, 105.109466748, 89.8999443826, 127.635868911, 698.479389269, 729.412160532, 642.07903466, 689.065506993 :] ,
+[: 823.5121049, 519.142264082, 992.140973467, 580.155213675, 384.231229568, 103.368273663, 181.660103584, 823.424263927, 348.270798881, 268.039882147, 463.572488124, 181.343319817, 207.466684373, 105.109466748, 0.0, 78.8542960149, 116.590220543, 593.369922521, 624.302693785, 536.969567912, 583.956040245 :] ,
+[: 744.657808885, 440.287968067, 1012.64739307, 659.00950969, 463.085525583, 182.222569678, 166.450581219, 776.882679849, 269.416502866, 189.185586132, 384.718192109, 102.489023803, 188.355198749, 89.8999443826, 78.8542960149, 0.0, 37.7359245282, 672.224218536, 703.156989799, 615.823863927, 662.81033626 :] ,
+[: 706.921884357, 402.552043539, 974.911468542, 623.60996273, 427.685978623, 146.823022718, 204.186505747, 739.146755321, 231.680578338, 151.449661604, 346.982267581, 99.6393496566, 185.505524603, 127.635868911, 116.590220543, 37.7359245282, 0.0, 636.824671576, 667.75744284, 580.424316967, 627.4107893 :] ,
+[: 583.720874466, 279.351033648, 428.377523153, 41.9761837236, 209.138692953, 490.001648858, 775.030026105, 230.054341407, 489.588994064, 530.453415582, 334.920809605, 710.446414134, 796.312589081, 698.479389269, 593.369922521, 672.224218536, 636.824671576, 0.0, 60.5392434707, 56.4003546088, 408.86350363 :] ,
+[: 644.260117937, 339.890277118, 367.838279683, 44.1474801093, 240.071464216, 520.934420122, 805.962797368, 290.593584877, 550.128237535, 590.992659053, 395.460053076, 767.396792496, 831.769378158, 729.412160532, 624.302693785, 703.156989799, 667.75744284, 60.5392434707, 0.0, 87.3331258727, 439.796274893 :] ,
+[: 640.121229075, 335.751388256, 455.171405555, 43.1856457634, 152.738338344, 433.601294249, 718.629671496, 286.454696015, 545.989348673, 586.853770191, 391.321164214, 680.063666624, 744.436252285, 642.07903466, 536.969567912, 615.823863927, 580.424316967, 56.4003546088, 87.3331258727, 0.0, 352.463149021 :] ,
+[: 992.584378096, 688.214537277, 807.634554576, 395.648794784, 199.724810677, 480.587766583, 765.616143829, 638.917845036, 760.943644279, 680.712727545, 743.784313235, 727.050138957, 791.422724618, 689.065506993, 583.956040245, 662.81033626, 627.4107893, 408.86350363, 439.796274893, 352.463149021, 0.0 :] 
+:];
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Distance table functions
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fun list<int> emptyList( int s ) {
+	list<int> result = newList(int);
+	for i from 0  to s {
+		result = result + [: 0 :];	
+	}	
+	return result;
+}
+
+fun list<list<int>> emptyMarix( int s ) {
+	list<list<int>> result = newList( list<int> );
+	for i from 0  to s {
+		result = result + [: emptyList(s) :];	
+	}	
+	return result;
+}
+
+fun real getElementAt( list<list<real>> l , int i , int j ){
+	return l[i][j];
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Gaussian distribution for spawn rate, spawn start and goal location
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+fun real GaussianWith1hrStd(real currentNow, real meanInMin){
+	int nowTime := int(real(currentNow));
+    int currentDayTimeMinutes = nowTime % minInDay; 
+    real x = real(currentDayTimeMinutes);
+    
+    //The constants are precomputed values from Gaussian function formula
+	real result = 0.00664903800669 * pow(2.71828182846,-0.5*pow((-meanInMin +x)/60.0,2.0) );
+
+	return result * GAUSS_BOOSTER;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Spawn rate
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fun real SpawnRate(real currentNow){
+int nowTime := int(real(currentNow));
+	real currentTimeOfDay = real(nowTime % minInDay);
+	
+	real mean9am = 540.0;
+	real mean5pm = 1020.0;
+	real mean1230am = 750.0;
+	
+	return (GaussianWith1hrStd(currentTimeOfDay, mean5pm) + GaussianWith1hrStd(currentTimeOfDay, mean9am) +  GaussianWith1hrStd(currentTimeOfDay, mean1230am) + 0.1)*SPAWN_RATE_BOOSTER;
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Spawn start and goal probability 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+fun real ChooseProbabilityGoal(location nodeLocation, real currentNow){
+	int nowTime := int(real(currentNow));
+	real currentTimeOfDay = real(nowTime % minInDay);
+	
+	real mean9am = 540.0;
+	real mean5pm = 1020.0;
+	real mean1230am = 750.0;
+	
+    if(nodeLocation.id == 0){
+		return GaussianWith1hrStd(currentTimeOfDay, mean9am)*CHOOSE_START_GOAL_GAUSS_BOOSTER + 1.0;
+	} 
+	else if(nodeLocation.id == 1){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 2){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 3){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 4){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 5){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 6){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 7){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 8){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 9){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 10){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 11){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 12){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 13){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 14){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 15){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 16){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 17){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 18){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 19){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 20){
+		return GaussianWith1hrStd(currentTimeOfDay, mean5pm)*CHOOSE_START_GOAL_GAUSS_BOOSTER + 1.0;
+	} 
+
+	else return 1.0;
+}
+
+fun real ChooseProbabilityStart(location nodeLocation, real currentNow){
+	int nowTime := int(real(currentNow));
+	real currentTimeOfDay = real(nowTime % minInDay);
+	
+	real mean9am = 540.0;
+	real mean5pm = 1020.0;
+	real mean1230am = 750.0;
+	
+
+    if(nodeLocation.id == 0){
+		return GaussianWith1hrStd(currentTimeOfDay, mean5pm)*CHOOSE_START_GOAL_GAUSS_BOOSTER + 1.0;
+	} 
+	else if(nodeLocation.id == 1){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 2){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 3){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 4){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 5){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 6){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 7){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 8){
+		return 1.0;
+	} 
+	else if(nodeLocation.id == 9){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 10){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 11){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 12){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 13){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 14){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 15){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 16){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 17){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 18){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 19){
+		return 0.0;
+	} 
+	else if(nodeLocation.id == 20){
+	    return GaussianWith1hrStd(currentTimeOfDay, mean9am)*CHOOSE_START_GOAL_GAUSS_BOOSTER + 1.0;
+	} 
+	
+	else return 1.0;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Choose probability - next node while moving
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fun real ChooseProbabilityTraffic(location newLocation, location currentLocation, location goalLocation, int trafficSameDirection, int trafficOtherDirection){
+	real distanceCurrent = getElementAt(DISTANCES, currentLocation.id, goalLocation.id);
+	real distanceNew = getElementAt(DISTANCES, newLocation.id, goalLocation.id);
+	real d = getElementAt(DISTANCES, currentLocation.id, newLocation.id);
+	
+	real difference = distanceCurrent - distanceNew;
+	
+	real overallTraffic = TRAFFIC_BOOSTER*(real(trafficOtherDirection)/d);
+	
+	real probResult = 0.0;
+	
+	if(overallTraffic != 0.0){
+		if(difference >= 0.0) {
+			probResult = abs(difference)/(overallTraffic);
+		}	
+		else{
+			probResult =  1.0/((abs(difference)*(overallTraffic)));
+		}
+	}
+	else{
+		if(difference >= 0.0) {
+			probResult =  abs(difference);
+		}	
+		else{
+			probResult =  1.0/(abs(difference));
+		}
+	}
+	
+	return probResult;
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Move rate
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fun real MoveRateTraffic(location locationFrom, location locationTo, int trafficSameDirection,  int trafficOtherDirection){
+
+	real d = getElementAt(DISTANCES, locationFrom.id, locationTo.id);
+	
+	real overallTraffic = TRAFFIC_BOOSTER*(real(trafficOtherDirection)/d);
+	
+	if (overallTraffic == 0.0){
+		return MOVE_RATE_BOOSTER*(1.0/d);
+	}
+	
+	return  MOVE_RATE_BOOSTER*((1.0/d)/overallTraffic);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// New Pedestrian Generator
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+component Generator(){
+	store{
+		attrib startLoc := [0,6,7];
+		attrib goalLoc := [4,6,0];
+    }
+    behaviour{
+    	ReadyToAssignStart = assignStart*(start){my.startLoc := start;}.ReadyToAssignGoal;
+    	ReadyToAssignGoal = assignGoal*(goal){my.goalLoc := goal;}.ReadyToSpawn;
+        ReadyToSpawn = spawn*[true]<>{}.ReadyToAssignStart;
+    }
+    init{ReadyToAssignStart}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Path Node
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+component PathNode(location myLocation, int myCurrentOccupancy){
+	store{
+    	attrib bool isPedestrian := false;
+    attrib location nodeLocation := myLocation;
+	
+	attrib int arrived := 0;
+	attrib real timeSum := 0.0;
+	}
+	behaviour{
+		
+		Advertisement = choose*[true]<my.nodeLocation>{}.Advertisement;
+		Arrival = arrive[my.nodeLocation == arrivalLocation](arrivalLocation, startTime){my.arrived = my.arrived + 1; timeSum = timeSum + (now - startTime);}.Arrival;
+		
+		GoalAssignment = assignGoal*<my.nodeLocation>{}.GoalAssignment;
+		StartAssignment = assignStart*<my.nodeLocation>{}.StartAssignment;
+		
+		
+	}
+	init{ Advertisement | Arrival | GoalAssignment | StartAssignment }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Pedestrian
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+component Pedestrian(location start, location goal, real stime_init, process Z){
+    store{
+    	attrib bool isPedestrian := true;
+    	attrib location startLocation :=start;
+    	attrib location currentLocation := start;
+    	attrib location goalLocation := goal;
+    	attrib location nextLocation := start;
+    	attrib location previousLocation :=start;
+        attrib stime := stime_init;
+    }
+    behaviour{
+      ReadyToChoose =  choose*[nodeLocation in my.currentLocation.post](nodeLocation){my.nextLocation := nodeLocation; }.ReadyToMove;
+      ReadyToMove = move*[false]<my.currentLocation, my.nextLocation>{my.previousLocation := my.currentLocation; my.currentLocation := my.nextLocation;}.ReadyToArrive; 
+      
+      ReadyToArrive = [my.currentLocation == my.goalLocation]arrive<my.goalLocation, my.stime>.kill + continue*[false]<>.ReadyToChoose;
+      
+      
+      
+    }
+    init{Z}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// System definition
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+system Meadows{
+	space Indexed2DGrid()
+	
+       collective{
+       	    new Generator();
+            
+            new PathNode([0,488058,6200009],0);
+            new PathNode([1,488043,6199705],0);
+            new PathNode([2,487474,6199649],0);
+            new PathNode([3,487840,6199463],0);
+            new PathNode([4,488028,6199411],0);
+            new PathNode([5,488308,6199389],0);
+            new PathNode([6,488579,6199475],0);
+            new PathNode([7,487707,6199685],0);
+            new PathNode([8,488249,6199663],0);
+            new PathNode([9,488263,6199584],0);
+            new PathNode([10,488091,6199677],0);
+            new PathNode([11,488456,6199586],0);
+            new PathNode([12,488533,6199548],0);
+            new PathNode([13,488507,6199449],0);
+            new PathNode([14,488409,6199411],0);
+            new PathNode([15,488426,6199488],0);
+            new PathNode([16,488394,6199508],0);
+            new PathNode([17,487849,6199504],0);
+            new PathNode([18,487797,6199473],0);
+            new PathNode([19,487883,6199459],0);
+            new PathNode([20,488045,6199212],0);
+
+       }
+       environment{
+          store{
+              attrib spawned := 0;
+          }
+          prob{
+          	  assignGoal*{return ChooseProbabilityGoal(sender.nodeLocation, now);}
+          	  assignStart*{return ChooseProbabilityStart(sender.nodeLocation, now);}
+          	  choose* {if (!sender.isPedestrian) {		  
+          			return ChooseProbabilityTraffic (sender.nodeLocation, 
+          				                             receiver.currentLocation, 
+          				                             receiver.goalLocation, 
+          				                             0,
+          				                             #{Pedestrian[*] | my.currentLocation==sender.nodeLocation && my.nextLocation == receiver.currentLocation}
+          			); 
+          		} else {
+          			return 0.0;
+          		}
+      		}
+            default{
+               return 1.0;
+            }
+          }
+          rate{
+
+          	arrive{return fastRate;}
+          	choose* {return fastRate;}
+          	
+          	spawn*{return SpawnRate(now);}
+          	move* {
+          		return MoveRateTraffic(sender.currentLocation, sender.nextLocation, 
+          		          0,
+          		          #{Pedestrian[*] | my.currentLocation==sender.nextLocation && my.nextLocation == sender.currentLocation}
+          	);
+         
+          }         
+            default {
+                   return 1.0;
+            }
+          }
+          update{   
+          spawn* {new Pedestrian(sender.startLoc, sender.goalLoc, now, ReadyToArrive)<1>; global.spawned = global.spawned +1; }
+       }
+    }
+  }
+  
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Measures
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+measure readyToChoose = #{Pedestrian[ReadyToChoose] | true};
+measure readyToMove = #{Pedestrian[ReadyToMove] | true};
+
+
+measure totalSpawned = avg{global.spawned};
+
+
+
+measure pedestrians = #{Pedestrian[*] | true};
+
+
+
+measure trafficAt_0_1 = #{Pedestrian[*] | my.currentLocation==[0,488058,6200009]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_1_0 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [0,488058,6200009]};
+measure trafficAt_1_4 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [4,488028,6199411]};
+measure trafficAt_1_7 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [7,487707,6199685]};
+measure trafficAt_1_8 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [8,488249,6199663]};
+measure trafficAt_1_10 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [10,488091,6199677]};
+measure trafficAt_1_17 = #{Pedestrian[*] | my.currentLocation==[1,488043,6199705]  && my.nextLocation == [17,487849,6199504]};
+measure trafficAt_2_7 = #{Pedestrian[*] | my.currentLocation==[2,487474,6199649]  && my.nextLocation == [7,487707,6199685]};
+measure trafficAt_2_18 = #{Pedestrian[*] | my.currentLocation==[2,487474,6199649]  && my.nextLocation == [18,487797,6199473]};
+measure trafficAt_3_17 = #{Pedestrian[*] | my.currentLocation==[3,487840,6199463]  && my.nextLocation == [17,487849,6199504]};
+measure trafficAt_3_18 = #{Pedestrian[*] | my.currentLocation==[3,487840,6199463]  && my.nextLocation == [18,487797,6199473]};
+measure trafficAt_3_19 = #{Pedestrian[*] | my.currentLocation==[3,487840,6199463]  && my.nextLocation == [19,487883,6199459]};
+measure trafficAt_4_1 = #{Pedestrian[*] | my.currentLocation==[4,488028,6199411]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_4_5 = #{Pedestrian[*] | my.currentLocation==[4,488028,6199411]  && my.nextLocation == [5,488308,6199389]};
+measure trafficAt_4_19 = #{Pedestrian[*] | my.currentLocation==[4,488028,6199411]  && my.nextLocation == [19,487883,6199459]};
+measure trafficAt_4_20 = #{Pedestrian[*] | my.currentLocation==[4,488028,6199411]  && my.nextLocation == [20,488045,6199212]};
+measure trafficAt_5_4 = #{Pedestrian[*] | my.currentLocation==[5,488308,6199389]  && my.nextLocation == [4,488028,6199411]};
+measure trafficAt_5_9 = #{Pedestrian[*] | my.currentLocation==[5,488308,6199389]  && my.nextLocation == [9,488263,6199584]};
+measure trafficAt_5_10 = #{Pedestrian[*] | my.currentLocation==[5,488308,6199389]  && my.nextLocation == [10,488091,6199677]};
+measure trafficAt_5_14 = #{Pedestrian[*] | my.currentLocation==[5,488308,6199389]  && my.nextLocation == [14,488409,6199411]};
+measure trafficAt_5_16 = #{Pedestrian[*] | my.currentLocation==[5,488308,6199389]  && my.nextLocation == [16,488394,6199508]};
+measure trafficAt_6_12 = #{Pedestrian[*] | my.currentLocation==[6,488579,6199475]  && my.nextLocation == [12,488533,6199548]};
+measure trafficAt_6_13 = #{Pedestrian[*] | my.currentLocation==[6,488579,6199475]  && my.nextLocation == [13,488507,6199449]};
+measure trafficAt_7_1 = #{Pedestrian[*] | my.currentLocation==[7,487707,6199685]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_7_2 = #{Pedestrian[*] | my.currentLocation==[7,487707,6199685]  && my.nextLocation == [2,487474,6199649]};
+measure trafficAt_7_17 = #{Pedestrian[*] | my.currentLocation==[7,487707,6199685]  && my.nextLocation == [17,487849,6199504]};
+measure trafficAt_8_1 = #{Pedestrian[*] | my.currentLocation==[8,488249,6199663]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_8_9 = #{Pedestrian[*] | my.currentLocation==[8,488249,6199663]  && my.nextLocation == [9,488263,6199584]};
+measure trafficAt_8_11 = #{Pedestrian[*] | my.currentLocation==[8,488249,6199663]  && my.nextLocation == [11,488456,6199586]};
+measure trafficAt_9_5 = #{Pedestrian[*] | my.currentLocation==[9,488263,6199584]  && my.nextLocation == [5,488308,6199389]};
+measure trafficAt_9_8 = #{Pedestrian[*] | my.currentLocation==[9,488263,6199584]  && my.nextLocation == [8,488249,6199663]};
+measure trafficAt_9_10 = #{Pedestrian[*] | my.currentLocation==[9,488263,6199584]  && my.nextLocation == [10,488091,6199677]};
+measure trafficAt_9_16 = #{Pedestrian[*] | my.currentLocation==[9,488263,6199584]  && my.nextLocation == [16,488394,6199508]};
+measure trafficAt_10_1 = #{Pedestrian[*] | my.currentLocation==[10,488091,6199677]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_10_5 = #{Pedestrian[*] | my.currentLocation==[10,488091,6199677]  && my.nextLocation == [5,488308,6199389]};
+measure trafficAt_10_9 = #{Pedestrian[*] | my.currentLocation==[10,488091,6199677]  && my.nextLocation == [9,488263,6199584]};
+measure trafficAt_11_8 = #{Pedestrian[*] | my.currentLocation==[11,488456,6199586]  && my.nextLocation == [8,488249,6199663]};
+measure trafficAt_11_12 = #{Pedestrian[*] | my.currentLocation==[11,488456,6199586]  && my.nextLocation == [12,488533,6199548]};
+measure trafficAt_11_15 = #{Pedestrian[*] | my.currentLocation==[11,488456,6199586]  && my.nextLocation == [15,488426,6199488]};
+measure trafficAt_11_16 = #{Pedestrian[*] | my.currentLocation==[11,488456,6199586]  && my.nextLocation == [16,488394,6199508]};
+measure trafficAt_12_6 = #{Pedestrian[*] | my.currentLocation==[12,488533,6199548]  && my.nextLocation == [6,488579,6199475]};
+measure trafficAt_12_11 = #{Pedestrian[*] | my.currentLocation==[12,488533,6199548]  && my.nextLocation == [11,488456,6199586]};
+measure trafficAt_12_13 = #{Pedestrian[*] | my.currentLocation==[12,488533,6199548]  && my.nextLocation == [13,488507,6199449]};
+measure trafficAt_13_6 = #{Pedestrian[*] | my.currentLocation==[13,488507,6199449]  && my.nextLocation == [6,488579,6199475]};
+measure trafficAt_13_12 = #{Pedestrian[*] | my.currentLocation==[13,488507,6199449]  && my.nextLocation == [12,488533,6199548]};
+measure trafficAt_13_14 = #{Pedestrian[*] | my.currentLocation==[13,488507,6199449]  && my.nextLocation == [14,488409,6199411]};
+measure trafficAt_13_15 = #{Pedestrian[*] | my.currentLocation==[13,488507,6199449]  && my.nextLocation == [15,488426,6199488]};
+measure trafficAt_14_5 = #{Pedestrian[*] | my.currentLocation==[14,488409,6199411]  && my.nextLocation == [5,488308,6199389]};
+measure trafficAt_14_13 = #{Pedestrian[*] | my.currentLocation==[14,488409,6199411]  && my.nextLocation == [13,488507,6199449]};
+measure trafficAt_14_15 = #{Pedestrian[*] | my.currentLocation==[14,488409,6199411]  && my.nextLocation == [15,488426,6199488]};
+measure trafficAt_15_11 = #{Pedestrian[*] | my.currentLocation==[15,488426,6199488]  && my.nextLocation == [11,488456,6199586]};
+measure trafficAt_15_13 = #{Pedestrian[*] | my.currentLocation==[15,488426,6199488]  && my.nextLocation == [13,488507,6199449]};
+measure trafficAt_15_14 = #{Pedestrian[*] | my.currentLocation==[15,488426,6199488]  && my.nextLocation == [14,488409,6199411]};
+measure trafficAt_15_16 = #{Pedestrian[*] | my.currentLocation==[15,488426,6199488]  && my.nextLocation == [16,488394,6199508]};
+measure trafficAt_16_5 = #{Pedestrian[*] | my.currentLocation==[16,488394,6199508]  && my.nextLocation == [5,488308,6199389]};
+measure trafficAt_16_9 = #{Pedestrian[*] | my.currentLocation==[16,488394,6199508]  && my.nextLocation == [9,488263,6199584]};
+measure trafficAt_16_11 = #{Pedestrian[*] | my.currentLocation==[16,488394,6199508]  && my.nextLocation == [11,488456,6199586]};
+measure trafficAt_16_15 = #{Pedestrian[*] | my.currentLocation==[16,488394,6199508]  && my.nextLocation == [15,488426,6199488]};
+measure trafficAt_17_1 = #{Pedestrian[*] | my.currentLocation==[17,487849,6199504]  && my.nextLocation == [1,488043,6199705]};
+measure trafficAt_17_3 = #{Pedestrian[*] | my.currentLocation==[17,487849,6199504]  && my.nextLocation == [3,487840,6199463]};
+measure trafficAt_17_7 = #{Pedestrian[*] | my.currentLocation==[17,487849,6199504]  && my.nextLocation == [7,487707,6199685]};
+measure trafficAt_17_18 = #{Pedestrian[*] | my.currentLocation==[17,487849,6199504]  && my.nextLocation == [18,487797,6199473]};
+measure trafficAt_17_19 = #{Pedestrian[*] | my.currentLocation==[17,487849,6199504]  && my.nextLocation == [19,487883,6199459]};
+measure trafficAt_18_2 = #{Pedestrian[*] | my.currentLocation==[18,487797,6199473]  && my.nextLocation == [2,487474,6199649]};
+measure trafficAt_18_3 = #{Pedestrian[*] | my.currentLocation==[18,487797,6199473]  && my.nextLocation == [3,487840,6199463]};
+measure trafficAt_18_17 = #{Pedestrian[*] | my.currentLocation==[18,487797,6199473]  && my.nextLocation == [17,487849,6199504]};
+measure trafficAt_19_3 = #{Pedestrian[*] | my.currentLocation==[19,487883,6199459]  && my.nextLocation == [3,487840,6199463]};
+measure trafficAt_19_4 = #{Pedestrian[*] | my.currentLocation==[19,487883,6199459]  && my.nextLocation == [4,488028,6199411]};
+measure trafficAt_19_17 = #{Pedestrian[*] | my.currentLocation==[19,487883,6199459]  && my.nextLocation == [17,487849,6199504]};
+measure trafficAt_20_4 = #{Pedestrian[*] | my.currentLocation==[20,488045,6199212]  && my.nextLocation == [4,488028,6199411]};
+
+measure pedestriansWithGoal_0 = #{Pedestrian[*] | my.goalLocation == [0,488058,6200009]};
+measure pedestriansWithGoal_1 = #{Pedestrian[*] | my.goalLocation == [1,488043,6199705]};
+measure pedestriansWithGoal_2 = #{Pedestrian[*] | my.goalLocation == [2,487474,6199649]};
+measure pedestriansWithGoal_3 = #{Pedestrian[*] | my.goalLocation == [3,487840,6199463]};
+measure pedestriansWithGoal_4 = #{Pedestrian[*] | my.goalLocation == [4,488028,6199411]};
+measure pedestriansWithGoal_5 = #{Pedestrian[*] | my.goalLocation == [5,488308,6199389]};
+measure pedestriansWithGoal_6 = #{Pedestrian[*] | my.goalLocation == [6,488579,6199475]};
+measure pedestriansWithGoal_7 = #{Pedestrian[*] | my.goalLocation == [7,487707,6199685]};
+measure pedestriansWithGoal_8 = #{Pedestrian[*] | my.goalLocation == [8,488249,6199663]};
+measure pedestriansWithGoal_9 = #{Pedestrian[*] | my.goalLocation == [9,488263,6199584]};
+measure pedestriansWithGoal_10 = #{Pedestrian[*] | my.goalLocation == [10,488091,6199677]};
+measure pedestriansWithGoal_11 = #{Pedestrian[*] | my.goalLocation == [11,488456,6199586]};
+measure pedestriansWithGoal_12 = #{Pedestrian[*] | my.goalLocation == [12,488533,6199548]};
+measure pedestriansWithGoal_13 = #{Pedestrian[*] | my.goalLocation == [13,488507,6199449]};
+measure pedestriansWithGoal_14 = #{Pedestrian[*] | my.goalLocation == [14,488409,6199411]};
+measure pedestriansWithGoal_15 = #{Pedestrian[*] | my.goalLocation == [15,488426,6199488]};
+measure pedestriansWithGoal_16 = #{Pedestrian[*] | my.goalLocation == [16,488394,6199508]};
+measure pedestriansWithGoal_17 = #{Pedestrian[*] | my.goalLocation == [17,487849,6199504]};
+measure pedestriansWithGoal_18 = #{Pedestrian[*] | my.goalLocation == [18,487797,6199473]};
+measure pedestriansWithGoal_19 = #{Pedestrian[*] | my.goalLocation == [19,487883,6199459]};
+measure pedestriansWithGoal_20 = #{Pedestrian[*] | my.goalLocation == [20,488045,6199212]};
+
+measure arrivedAt_0 = avg{my.arrived | my.nodeLocation == [0,488058,6200009]};
+measure arrivedAt_1 = avg{my.arrived | my.nodeLocation == [1,488043,6199705]};
+measure arrivedAt_2 = avg{my.arrived | my.nodeLocation == [2,487474,6199649]};
+measure arrivedAt_3 = avg{my.arrived | my.nodeLocation == [3,487840,6199463]};
+measure arrivedAt_4 = avg{my.arrived | my.nodeLocation == [4,488028,6199411]};
+measure arrivedAt_5 = avg{my.arrived | my.nodeLocation == [5,488308,6199389]};
+measure arrivedAt_6 = avg{my.arrived | my.nodeLocation == [6,488579,6199475]};
+measure arrivedAt_7 = avg{my.arrived | my.nodeLocation == [7,487707,6199685]};
+measure arrivedAt_8 = avg{my.arrived | my.nodeLocation == [8,488249,6199663]};
+measure arrivedAt_9 = avg{my.arrived | my.nodeLocation == [9,488263,6199584]};
+measure arrivedAt_10 = avg{my.arrived | my.nodeLocation == [10,488091,6199677]};
+measure arrivedAt_11 = avg{my.arrived | my.nodeLocation == [11,488456,6199586]};
+measure arrivedAt_12 = avg{my.arrived | my.nodeLocation == [12,488533,6199548]};
+measure arrivedAt_13 = avg{my.arrived | my.nodeLocation == [13,488507,6199449]};
+measure arrivedAt_14 = avg{my.arrived | my.nodeLocation == [14,488409,6199411]};
+measure arrivedAt_15 = avg{my.arrived | my.nodeLocation == [15,488426,6199488]};
+measure arrivedAt_16 = avg{my.arrived | my.nodeLocation == [16,488394,6199508]};
+measure arrivedAt_17 = avg{my.arrived | my.nodeLocation == [17,487849,6199504]};
+measure arrivedAt_18 = avg{my.arrived | my.nodeLocation == [18,487797,6199473]};
+measure arrivedAt_19 = avg{my.arrived | my.nodeLocation == [19,487883,6199459]};
+measure arrivedAt_20 = avg{my.arrived | my.nodeLocation == [20,488045,6199212]};
+
